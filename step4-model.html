@@ -1,0 +1,1740 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HEALTH-AI · Model &amp; Parameters</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-logo">H</div>
+      <div>
+        <div class="nav-title">HEALTH-AI · ML Learning Tool</div>
+        <div class="nav-subtitle">Erasmus+ KA220-HED · For Healthcare Professionals</div>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-chip" id="domainBtn"><span class="nav-chip-dot"></span> Domain: <b id="domainLabel">Cardiology</b> ▾</div>
+      <button class="nav-btn" id="openA11yBtn" style="display:flex; align-items:center; gap:6px; border-color:transparent; background:transparent;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /><path d="M8 12h8" />
+        </svg>
+        Accessibility
+      </button>
+      <select class="theme-selector" id="themeSelector">
+        <option value="light">Light Theme</option>
+        <option value="dark">Aubergine (Dark)</option>
+        <option value="nature">Default (Green)</option>
+        <option value="neon">Neon Night</option>
+      </select>
+      <button class="nav-btn" id="resetAll">↺ Reset</button>
+      <button class="nav-btn" style="border:none;">? Help</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- DOMAIN PILLS -->
+    <div class="domain-scroll-wrapper">
+      <div class="domain-bar" id="domainBar">
+        <div class="domain-pill active" data-domain="Cardiology">Cardiology</div>
+        <div class="domain-pill" data-domain="Radiology">Radiology</div>
+        <div class="domain-pill" data-domain="Nephrology">Nephrology</div>
+        <div class="domain-pill" data-domain="Oncology">Oncology</div>
+        <div class="domain-pill" data-domain="Neurology">Neurology</div>
+        <div class="domain-pill" data-domain="Endocrinology">Endocrinology</div>
+        <div class="domain-pill" data-domain="Hepatology">Hepatology</div>
+        <div class="domain-pill" data-domain="Mental Health">Mental Health</div>
+        <div class="domain-pill" data-domain="Pulmonology">Pulmonology</div>
+        <div class="domain-pill" data-domain="Haematology — Anaemia">Haematology — Anaemia</div>
+        <div class="domain-pill" data-domain="Dermatology">Dermatology</div>
+        <div class="domain-pill" data-domain="Ophthalmology">Ophthalmology</div>
+        <div class="domain-pill" data-domain="Orthopaedics">Orthopaedics</div>
+        <div class="domain-pill" data-domain="ICU / Sepsis">ICU / Sepsis</div>
+        <div class="domain-pill" data-domain="Obstetrics — Fetal Health">Obstetrics — Fetal Health</div>
+        <div class="domain-pill" data-domain="Cardiology — Arrhythmia">Cardiology — Arrhythmia</div>
+        <div class="domain-pill" data-domain="Oncology — Cervical">Oncology — Cervical</div>
+        <div class="domain-pill" data-domain="Thyroid / Endocrinology">Thyroid / Endocrinology</div>
+        <div class="domain-pill" data-domain="Pharmacy">Pharmacy</div>
+      </div>
+    </div>
+
+    <!-- STEPPER -->
+    <div class="stepper" id="stepper">
+      <button class="step-btn done" data-step="1">
+        <div class="step-num"><span>1</span></div>
+        <div class="step-label"><b>Clinical Context</b><small>Use case &amp; goals</small></div>
+      </button>
+      <button class="step-btn done" data-step="2">
+        <div class="step-num"><span>2</span></div>
+        <div class="step-label"><b>Data Exploration</b><small>Upload &amp; understand</small></div>
+      </button>
+      <button class="step-btn done" data-step="3">
+        <div class="step-num"><span>3</span></div>
+        <div class="step-label"><b>Data Preparation</b><small>Clean &amp; split data</small></div>
+      </button>
+      <button class="step-btn active" data-step="4">
+        <div class="step-num"><span>4</span></div>
+        <div class="step-label"><b>Model &amp; Parameters</b><small>Select &amp; tune</small></div>
+      </button>
+      <button class="step-btn " data-step="5">
+        <div class="step-num"><span>5</span></div>
+        <div class="step-label"><b>Results</b><small>Metrics &amp; matrix</small></div>
+      </button>
+      <button class="step-btn " data-step="6">
+        <div class="step-num"><span>6</span></div>
+        <div class="step-label"><b>Explainability</b><small>Why this prediction?</small></div>
+      </button>
+      <button class="step-btn " data-step="7">
+        <div class="step-num"><span>7</span></div>
+        <div class="step-label"><b>Ethics &amp; Bias</b><small>Fairness check</small></div>
+      </button>
+    </div>
+
+    <!-- SCREENS (all included, only step 4 active) -->
+    <section class="screen" id="step-1">
+      <div class="screen-header">
+        <div>
+          <span class="step-tag">STEP 1 OF 7</span>
+          <h2>Clinical Context &amp; Problem Definition</h2>
+          <p id="step1-desc">Before we look at any data, we define the clinical problem. In <b>Cardiology</b>, we want
+            to predict which patients are most likely to be readmitted to hospital within 30 days after a heart failure
+            discharge — so doctors can arrange follow-up care in advance.</p>
+        </div>
+        <div class="hdr-right">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;">⏱ ~3 minutes</div>
+          <button class="btn primary" data-next="2">Next Step →</button>
+        </div>
+      </div>
+      <div class="cols">
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="card">
+            <div class="card-title">Clinical Scenario</div>
+            <label class="lbl">Domain</label>
+            <div style="font-size:15px;font-weight:600;color:var(--navy);padding:8px 0;" id="step1-domain">Cardiology
+            </div>
+            <label class="lbl">Clinical Question</label>
+            <div
+              style="font-size:13px;color:var(--mid);line-height:1.6;padding:10px 12px;background:var(--sky);border-radius:10px;border:1px solid var(--line2);"
+              id="step1-question">
+              Will this patient be readmitted to hospital within 30 days of discharge following a heart failure episode?
+            </div>
+            <label class="lbl">Why This Matters</label>
+            <div style="font-size:13px;color:var(--mid);line-height:1.6;">
+              30% of heart failure patients are readmitted within 30 days. Each readmission costs approximately €15,000.
+              Early identification allows nurses to arrange discharge follow-up calls and medication checks.
+            </div>
+            <div class="banner warn">
+              <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <path d="M12 9v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg></div>
+              <div><b>What ML cannot do:</b> It cannot replace your clinical judgment. It can flag high-risk patients,
+                but you make the final decision.</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title">What Will Be Produced in Each Step</div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Step</th>
+                    <th>What You Will Create</th>
+                    <th>Plain English Meaning</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="tag info">1</span></td>
+                    <td>Clinical Brief</td>
+                    <td>The problem we are solving, and the safety rules</td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag info">2</span></td>
+                    <td>Data Profile</td>
+                    <td>Understanding your patient dataset — who is in it and what is missing</td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag info">3</span></td>
+                    <td>Preprocessing Recipe</td>
+                    <td>Cleaning and preparing data so the model can learn correctly</td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag info">4</span></td>
+                    <td>Trained Model</td>
+                    <td>A computer programme that has learned patterns from past patients</td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag info">5</span></td>
+                    <td>Evaluation Report</td>
+                    <td>How accurately does the model predict readmission?</td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag info">6</span></td>
+                    <td>Explanation</td>
+                    <td>Why did the model flag a specific patient as high risk?</td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag info">7</span></td>
+                    <td>Ethics Checklist</td>
+                    <td>Is the model fair for all patient groups? Who oversees it?</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="banner good" style="margin-top:12px;">
+              <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg></div>
+              <div><b>Remember:</b> A human doctor or nurse must always review the model's suggestions. This tool helps
+                you learn — it does not make clinical decisions.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-footer">
+        <small>Step 1 / 7 · Clinical Context</small>
+        <button class="btn primary" data-next="2">Next Step →</button>
+      </div>
+    </section>
+
+    <section class="screen" id="step-2">
+      <div class="screen-header">
+        <div>
+          <span class="step-tag">STEP 2 OF 7</span>
+          <h2>Data Exploration — Understanding Your Patient Dataset</h2>
+          <p>Before training any model, we examine what data is available. Use the default dataset or upload your own
+            CSV file of de-identified patient records.</p>
+        </div>
+        <div class="hdr-right">
+          <button class="btn primary" data-next="3">Next Step →</button>
+        </div>
+      </div>
+      <div class="cols">
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="card">
+            <div class="card-title">Data Source</div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+              <button class="btn active" id="useDefault" style="flex:1;border-color:var(--navy);color:var(--navy);">Use
+                Default Dataset</button>
+              <button class="btn" id="useUpload" style="flex:1;">Upload Your CSV</button>
+            </div>
+
+            <!-- Upload zone (hidden by default) -->
+            <div id="uploadArea" style="display:none;">
+              <div class="upload-zone" id="dropZone">
+                <input type="file" accept=".csv" id="csvInput" />
+                <div class="upload-icon">📂</div>
+                <div class="upload-text">Drag &amp; drop your CSV file here</div>
+                <div class="upload-sub">or click to browse · .csv only · max 50 MB</div>
+              </div>
+              <div class="privacy-note">🔒 Your file is processed in this session only. It is never stored or shared
+                with anyone.</div>
+              <div id="uploadStatus" style="margin-top:8px;display:none;">
+                <div class="banner good">
+                  <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      style="color:var(--good);">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg></div>
+                  <div id="uploadMsg">File loaded successfully.</div>
+                </div>
+              </div>
+              <div id="uploadError" style="margin-top:8px;display:none;">
+                <div class="banner bad">
+                  <div class="banner-icon">❌</div>
+                  <div id="uploadErrMsg">Error message here.</div>
+                </div>
+              </div>
+            </div>
+
+            <label class="lbl">Target Column (What We Want to Predict)</label>
+            <select class="sel" id="targetCol">
+              <option>Readmitted within 30 days (Yes / No)</option>
+              <option>Mortality within 90 days (Yes / No)</option>
+              <option>Diagnosis category</option>
+            </select>
+            <div style="font-size:11px;color:var(--muted);margin-top:5px;">This is the outcome the model will learn to
+              predict.</div>
+
+            <button class="btn" style="margin-top:12px;width:100%;" id="openMapper">🗂 Open Column Mapper &amp;
+              Validate</button>
+
+            <div id="schemaBanner" class="banner warn" style="margin-top:10px;">
+              <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <path d="M12 9v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg></div>
+              <div><b>Action needed:</b> Open the Column Mapper to confirm your data structure before continuing to Step
+                3.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Dataset Summary</div>
+            <div class="kpis">
+              <div class="kpi">
+                <div class="kpi-val">304</div>
+                <div class="kpi-name">Patients</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-val">12</div>
+                <div class="kpi-name">Measurements</div>
+              </div>
+              <div class="kpi warn">
+                <div class="kpi-val">6.8%</div>
+                <div class="kpi-name">Missing Data</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="card">
+            <div class="card-title">Class Balance — How Many Readmitted vs. Not?</div>
+            <div class="bars">
+              <div class="bar-row">
+                <div class="bar-lbl">Not Readmitted (0)</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:67%"></div>
+                </div>
+                <div class="bar-val">67%</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-lbl">Readmitted (1)</div>
+                <div class="bar-track">
+                  <div class="bar-fill teal" style="width:33%"></div>
+                </div>
+                <div class="bar-val">33%</div>
+              </div>
+            </div>
+            <div class="banner warn" style="margin-top:10px;">
+              <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <path d="M12 9v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg></div>
+              <div><b>Imbalance detected:</b> Only 33% of patients were readmitted. A lazy model could predict "not
+                readmitted" for everyone and be 67% accurate — but miss all real cases. We will handle this in Step 3.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Patient Measurements (Features)</div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Measurement</th>
+                    <th>Type</th>
+                    <th>Missing?</th>
+                    <th>Action Needed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Ejection Fraction (%)</td>
+                    <td>Number</td>
+                    <td>0%</td>
+                    <td><span class="tag good">Ready</span></td>
+                  </tr>
+                  <tr>
+                    <td>Serum Creatinine</td>
+                    <td>Number</td>
+                    <td>6.8%</td>
+                    <td><span class="tag warn">Fill Missing Values</span></td>
+                  </tr>
+                  <tr>
+                    <td>Age (years)</td>
+                    <td>Number</td>
+                    <td>0%</td>
+                    <td><span class="tag good">Ready</span></td>
+                  </tr>
+                  <tr>
+                    <td>Sex</td>
+                    <td>Category</td>
+                    <td>0%</td>
+                    <td><span class="tag good">Ready</span></td>
+                  </tr>
+                  <tr>
+                    <td>Smoking Status</td>
+                    <td>Category</td>
+                    <td>0.3%</td>
+                    <td><span class="tag good">Ready</span></td>
+                  </tr>
+                  <tr>
+                    <td>Patient ID</td>
+                    <td>Identifier</td>
+                    <td>0%</td>
+                    <td><span class="tag bad">Exclude — Not a clinical measurement</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-footer">
+        <small>Step 2 / 7 · Data Exploration</small>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" data-prev="1">← Previous</button>
+          <button class="btn primary" data-next="3">Next Step →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="step-3">
+    <div class="screen-header">
+      <div>
+        <span class="step-tag">STEP 3 OF 7</span>
+        <h2>Data Preparation — Cleaning &amp; Organising Your Data</h2>
+        <p>Before a model can learn, the data must be clean, consistent, and split into two groups: one for training
+          (learning) and one for testing (checking accuracy on patients the model has never seen).</p>
+      </div>
+      <div class="hdr-right">
+        <button class="btn primary" data-next="4">Next Step →</button>
+      </div>
+    </div>
+    <div class="cols">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="card">
+          <div class="card-title">Preparation Settings</div>
+
+          <label class="lbl">Train / Test Split</label>
+          <div class="slider-wrap">
+            <div class="slider-row">
+              <input type="range" min="60" max="90" step="5" value="80" id="splitSlider" />
+              <div class="slider-val" id="splitVal">80%</div>
+            </div>
+            <div class="slider-ends"><span>60% train</span><span>90% train</span></div>
+          </div>
+          <div class="slider-hint" id="splitHint">Training: 243 patients · Testing: 61 patients</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">The model learns from the training group and
+            is tested on the testing group — patients it has never seen before.</div>
+
+          <label class="lbl">Handling Missing Values</label>
+          <select class="sel">
+            <option selected>Fill with the middle value (median) — recommended</option>
+            <option>Fill with the most common value (mode)</option>
+            <option>Remove patients with missing values (loses data)</option>
+          </select>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Serum Creatinine has 6.8% missing. Filling
+            with the median preserves all 304 patients.</div>
+
+          <label class="lbl">Normalisation (Putting All Values on the Same Scale)</label>
+          <select class="sel">
+            <option selected>Z-score (recommended for most models)</option>
+            <option>Min-Max (0 to 1 scale)</option>
+            <option>None</option>
+          </select>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Age (0–100) and Serum Sodium (130–150 mmol/L)
+            are on different scales. Without normalisation, some models get confused by the size difference.</div>
+
+          <label class="lbl">Handling Class Imbalance (More Non-Readmitted Than Readmitted)</label>
+          <select class="sel">
+            <option selected>SMOTE — Create synthetic similar cases for the minority group</option>
+            <option>Class weights — Give higher importance to readmitted patients</option>
+            <option>None</option>
+          </select>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Because only 33% were readmitted, SMOTE
+            creates extra examples of readmitted patients so the model learns both groups equally well.</div>
+
+          <div class="btn-row">
+            <button class="btn teal" style="width:100%;">✓ Apply Preparation Settings</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="card">
+          <div class="card-title">Before &amp; After Normalisation — Ejection Fraction</div>
+          <div class="grid2">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:8px;">
+                BEFORE (raw values)</div>
+              <div class="bars">
+                <div class="bar-row">
+                  <div class="bar-lbl">Minimum</div>
+                  <div class="bar-track">
+                    <div class="bar-fill bad" style="width:14%"></div>
+                  </div>
+                  <div class="bar-val">14%</div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-lbl">Average</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:38%"></div>
+                  </div>
+                  <div class="bar-val">38%</div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-lbl">Maximum</div>
+                  <div class="bar-track">
+                    <div class="bar-fill teal" style="width:80%"></div>
+                  </div>
+                  <div class="bar-val">80%</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:8px;">
+                AFTER (normalised 0–1)</div>
+              <div class="bars">
+                <div class="bar-row">
+                  <div class="bar-lbl">Minimum</div>
+                  <div class="bar-track">
+                    <div class="bar-fill bad" style="width:0%"></div>
+                  </div>
+                  <div class="bar-val">0.00</div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-lbl">Average</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:50%"></div>
+                  </div>
+                  <div class="bar-val">0.50</div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-lbl">Maximum</div>
+                  <div class="bar-track">
+                    <div class="bar-fill teal" style="width:100%"></div>
+                  </div>
+                  <div class="bar-val">1.00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-title" style="margin-top:16px;">Class Balance — Before &amp; After SMOTE</div>
+          <div class="grid2">
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:8px;">
+                BEFORE</div>
+              <div class="bars">
+                <div class="bar-row">
+                  <div class="bar-lbl">Not Readmitted</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:67%"></div>
+                  </div>
+                  <div class="bar-val">67%</div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-lbl">Readmitted</div>
+                  <div class="bar-track">
+                    <div class="bar-fill warn" style="width:33%"></div>
+                  </div>
+                  <div class="bar-val">33%</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:8px;">
+                AFTER SMOTE</div>
+              <div class="bars">
+                <div class="bar-row">
+                  <div class="bar-lbl">Not Readmitted</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:50%"></div>
+                  </div>
+                  <div class="bar-val">50%</div>
+                </div>
+                <div class="bar-row">
+                  <div class="bar-lbl">Readmitted</div>
+                  <div class="bar-track">
+                    <div class="bar-fill teal" style="width:50%"></div>
+                  </div>
+                  <div class="bar-val">50%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="banner good" style="margin-top:10px;">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg></div>
+            <div><b>Ready:</b> Data is clean, split, and balanced. Proceed to Step 4 to choose a model.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <small>Step 3 / 7 · Data Preparation</small>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" data-prev="2">← Previous</button>
+        <button class="btn primary" data-next="4">Next Step →</button>
+      </div>
+    </div>
+  </section>
+
+    <section class="screen active" id="step-4">
+    <div class="screen-header">
+      <div>
+        <span class="step-tag">STEP 4 OF 7</span>
+        <h2>Model Selection &amp; Parameter Tuning</h2>
+        <p>Choose a machine learning algorithm, adjust its settings, and train it on your patient data. Try different
+          models and compare their accuracy side by side.</p>
+      </div>
+      <div class="hdr-right">
+        <div style="font-size:11px;color:var(--muted);font-weight:500;">Auto-retrain on change: <label
+            style="cursor:pointer;"><input type="checkbox" id="autoRetrain" checked style="margin-left:6px;" />
+            On</label></div>
+        <button class="btn primary" data-next="5">Next Step →</button>
+      </div>
+    </div>
+    <div class="cols">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="card">
+          <div class="card-title">Choose Algorithm</div>
+          <div class="model-tabs" id="modelTabs">
+            <div class="model-tab active trained" data-model="knn">KNN</div>
+            <div class="model-tab" data-model="svm">SVM</div>
+            <div class="model-tab" data-model="dt">Decision Tree</div>
+            <div class="model-tab" data-model="rf">Random Forest</div>
+            <div class="model-tab" data-model="lr">Logistic Reg.</div>
+            <div class="model-tab" data-model="nb">Naïve Bayes</div>
+          </div>
+
+          <!-- Model descriptions -->
+          <div class="model-desc" id="modelDesc">
+            <b>K-Nearest Neighbors (KNN)</b> — Finds the <b>K most similar past patients</b> and predicts based on
+            their outcomes. Like asking: "What happened to the 5 patients most similar to this one?" Simple and easy
+            to understand.
+          </div>
+
+          <!-- PARAMETER PANELS -->
+          <div id="params-knn">
+            <div class="card-title">Parameters</div>
+            <label class="lbl">K — Number of Similar Patients to Compare</label>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <input type="range" min="0" max="25" step="1" value="5" id="knnK" class="live-param" />
+                <div class="slider-val" id="knnKVal">5</div>
+              </div>
+              <div class="slider-ends"><span>0 (overview)</span><span>25 (very general)</span></div>
+            </div>
+            <div class="slider-hint">Low K = focuses on very similar cases (can be noisy). High K = considers many
+              patients (may miss details). K=5–7 is a good starting point.</div>
+
+            <label class="lbl">Distance Measure (How "Similarity" is Calculated)</label>
+            <select class="sel live-param" id="knnDist">
+              <option>Euclidean (straight-line distance) — recommended</option>
+              <option>Manhattan (grid-step distance)</option>
+            </select>
+          </div>
+
+          <div id="params-svm" style="display:none;">
+            <div class="card-title">Parameters</div>
+            <label class="lbl">Kernel (Shape of the Decision Boundary)</label>
+            <select class="sel live-param" id="svmKernel">
+              <option value="rbf">RBF — Radial (best for most clinical data)</option>
+              <option value="linear">Linear — Straight-line boundary</option>
+              <option value="poly">Polynomial — Curved boundary</option>
+            </select>
+            <label class="lbl">C — How Strictly to Fit Training Patients</label>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <input type="range" min="1" max="10" step="1" value="5" id="svmC" class="live-param" />
+                <div class="slider-val" id="svmCVal">1.0</div>
+              </div>
+              <div class="slider-ends"><span>0.01 (loose fit)</span><span>100 (strict fit)</span></div>
+            </div>
+            <div class="slider-hint">High C: model tries harder to classify every training patient correctly — risks
+              memorising instead of learning.</div>
+          </div>
+
+          <div id="params-dt" style="display:none;">
+            <div class="card-title">Parameters</div>
+            <label class="lbl">Maximum Depth — How Many Questions the Model Can Ask</label>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <input type="range" min="1" max="15" step="1" value="5" id="dtDepth" class="live-param" />
+                <div class="slider-val" id="dtDepthVal">5</div>
+              </div>
+              <div class="slider-ends"><span>1 (very simple)</span><span>15 (very detailed)</span></div>
+            </div>
+            <div class="slider-hint">A deeper tree asks more questions. Too deep = it memorises training patients and
+              fails on new ones.</div>
+            <label class="lbl">Split Criterion (How to Choose the Best Question)</label>
+            <select class="sel live-param">
+              <option>Gini impurity — most common choice</option>
+              <option>Entropy (Information Gain)</option>
+            </select>
+          </div>
+
+          <div id="params-rf" style="display:none;">
+            <div class="card-title">Parameters</div>
+            <label class="lbl">Number of Trees</label>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <input type="range" min="10" max="300" step="10" value="100" id="rfTrees" class="live-param" />
+                <div class="slider-val" id="rfTreesVal">100</div>
+              </div>
+              <div class="slider-ends"><span>10 (fast)</span><span>300 (stable)</span></div>
+            </div>
+            <div class="slider-hint">More trees = more stable predictions, but slower to train. Each tree votes — the
+              majority vote wins.</div>
+            <label class="lbl">Maximum Depth Per Tree</label>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <input type="range" min="1" max="20" step="1" value="10" id="rfDepth" class="live-param" />
+                <div class="slider-val" id="rfDepthVal">10</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="params-lr" style="display:none;">
+            <div class="card-title">Parameters</div>
+            <label class="lbl">C — Regularisation Strength</label>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <input type="range" min="1" max="10" step="1" value="5" id="lrC" class="live-param" />
+                <div class="slider-val" id="lrCVal">1.0</div>
+              </div>
+              <div class="slider-ends"><span>Strong (simple)</span><span>Weak (complex)</span></div>
+            </div>
+            <div class="slider-hint">Higher regularisation prevents the model from relying too heavily on any single
+              measurement.</div>
+            <label class="lbl">Maximum Iterations (How Long to Train)</label>
+            <div class="slider-wrap">
+              <div class="slider-row">
+                <input type="range" min="100" max="2000" step="100" value="1000" id="lrIter" class="live-param" />
+                <div class="slider-val" id="lrIterVal">1000</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="params-nb" style="display:none;">
+            <div class="card-title">Parameters</div>
+            <div class="banner info">
+              <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--info);">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M12 16v-4"></path>
+                  <path d="M12 8h.01"></path>
+                </svg></div>
+              <div><b>Naïve Bayes</b> has very few settings. It works by calculating the probability of readmission
+                given each measurement independently. It is fast and works well even with small datasets. Good as a
+                baseline comparison.</div>
+            </div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-top:8px;">Variance smoothing: <strong>1e-9</strong></div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn teal" id="trainBtn" style="flex:1;">⚡ Train Model</button>
+            <button class="btn" id="addCompare">+ Compare</button>
+          </div>
+          <div id="trainingStatus" style="display:none;margin-top:10px;">
+            <div class="banner info">
+              <div class="banner-icon">⏳</div>
+              <div id="trainingMsg">Training KNN (K=5)…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <!-- KNN SCATTER (only shown for KNN) -->
+
+        <!-- KNN VIZ -->
+        <div class="card" id="viz-knn">
+          <div class="card-title">KNN Visualisation — How it Finds Similar Patients</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Each dot is a past patient. The ★ is a
+            new patient. The ring expands to find the <span id="knnKVizLabel"
+              style="font-weight:700;color:var(--primary);">5</span> nearest neighbors.</div>
+          <canvas id="knnCanvas" class="viz-canvas"></canvas>
+          <div class="viz-legend">
+            <div class="viz-legend-item">
+              <div class="s-dot" style="background:var(--bad)"></div> Readmitted
+            </div>
+            <div class="viz-legend-item">
+              <div class="s-dot" style="background:var(--good)"></div> Not Readmitted
+            </div>
+            <div class="viz-legend-item">
+              <div class="s-dot"
+                style="background:var(--ink);width:12px;height:12px;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)">
+              </div> New Patient
+            </div>
+            <div class="viz-legend-item">
+              <div style="width:20px;height:2px;background:var(--primary);border-radius:99px;"></div> K-radius
+            </div>
+          </div>
+          <div class="banner good">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg></div>
+            <div><b>Clinical meaning:</b> The model actively searches the archive. It found that most patients with
+              similar age and heart function were readmitted. Prediction: <b>Readmit</b>.</div>
+          </div>
+        </div>
+
+        <!-- SVM VIZ -->
+        <div class="card" id="viz-svm" style="display:none;">
+          <div class="card-title">SVM — Margins &amp; Support Vectors</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">SVM draws the widest possible
+            boundary. The <b>support vectors</b> (outlined) are the hardest patients to classify.</div>
+          <canvas id="svmCanvas" class="viz-canvas"></canvas>
+          <div class="viz-legend">
+            <div class="viz-legend-item">
+              <div class="s-dot" style="background:var(--bad)"></div> Readmitted
+            </div>
+            <div class="viz-legend-item">
+              <div class="s-dot" style="background:var(--good)"></div> Not Readmitted
+            </div>
+            <div class="viz-legend-item">
+              <div class="s-dot" style="border:2px solid var(--ink);background:transparent;width:12px;height:12px;">
+              </div> Support Vector
+            </div>
+            <div class="viz-legend-item">
+              <div style="width:24px;height:2px;background:var(--ink);border-radius:2px;"></div> Decision Boundary
+            </div>
+            <div class="viz-legend-item">
+              <div style="width:24px;height:2px;border-top:2px dashed var(--text-muted);"></div> Margin
+            </div>
+          </div>
+          <div class="banner good">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg></div>
+            <div><b>Clinical meaning:</b> The boundary is the "line of uncertainty." Patients far from the line are
+              clear cases. Patients near the line require the most caution.</div>
+          </div>
+        </div>
+
+        <!-- DT VIZ -->
+        <div class="card" id="viz-dt" style="display:none;">
+          <div class="card-title">Decision Tree — Clinical Flowchart</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">The tree asks Yes/No questions. Notice
+            how deeper trees branch out exponentially.</div>
+          <div id="dtWrap" class="tree-wrap">
+            <!-- DOM tree injected here -->
+          </div>
+          <div class="banner warn" id="dtWarn" style="display:none;">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <path d="M12 9v4"></path>
+                <path d="M12 17h.01"></path>
+              </svg></div>
+            <div><b>Warning:</b> At depth <span id="dtWarnVal"></span>, the tree is becoming extremely complex and
+              likely memorising the training data (overfitting).</div>
+          </div>
+        </div>
+
+        <!-- RF VIZ -->
+        <div class="card" id="viz-rf" style="display:none;">
+          <div class="card-title">Random Forest — Committee Voting</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Each mini-tree is trained on a random
+            data slice. All <span id="rfTreeCountVal" style="font-weight:700;color:var(--primary);">100</span> trees
+            vote.</div>
+          <div class="vote-trees" id="voteTrees"></div>
+          <div class="vote-bar">
+            <div class="vote-row">
+              <div class="vote-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                  style="color:var(--bad);">
+                  <circle cx="12" cy="12" r="10" />
+                </svg> Readmit</div>
+              <div class="v-trk">
+                <div class="v-fil bad" id="voteReadmit"></div>
+              </div>
+              <div class="vote-pct" id="voteReadmitPct">0%</div>
+            </div>
+            <div class="vote-row">
+              <div class="vote-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                  style="color:var(--good);">
+                  <circle cx="12" cy="12" r="10" />
+                </svg> Safe</div>
+              <div class="v-trk">
+                <div class="v-fil good" id="voteSafe"></div>
+              </div>
+              <div class="vote-pct" id="voteSafePct">0%</div>
+            </div>
+          </div>
+          <div class="banner good">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg></div>
+            <div><b>Clinical meaning:</b> Like getting second opinions from <span id="rfTreeCountVal2">100</span>
+              different doctors. Much more stable than relying on a single tree.</div>
+          </div>
+        </div>
+
+        <!-- LR VIZ -->
+        <div class="card" id="viz-lr" style="display:none;">
+          <div class="card-title">Logistic Regression — Probability S-Curve</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Watch the curve's steepness react to
+            the Regularisation (C) slider. Low C = smooth, High C = steep.</div>
+          <canvas id="lrCanvas" class="viz-canvas"></canvas>
+          <div class="banner good" style="margin-top:12px;">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg></div>
+            <div><b>Clinical meaning:</b> The S-curve translates raw measurements into a probability (0% to 100%). The
+              steep part is the critical "tipping point" for intervention.</div>
+          </div>
+        </div>
+
+        <!-- NB VIZ -->
+        <div class="card" id="viz-nb" style="display:none;">
+          <div class="card-title">Naïve Bayes — Independent Feature Risks</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Calculates risk from each bodily
+            measurement completely independently of the others.</div>
+          <div class="prob-bars" id="nbBars">
+            <!-- JS Injected -->
+          </div>
+          <div class="banner info" style="margin-top:16px;">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--info);">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+              </svg></div>
+            <div><b>Clinical meaning:</b> The model assumes Age and Heart Function don't influence each other ("Naïve").
+              While medically untrue, it's mathematically efficient.</div>
+          </div>
+        </div>
+
+        <div class="card" id="compareCard" style="margin-top:12px;">
+          <div class="card-title">Model Comparison</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Model &amp; Settings</th>
+                  <th>Accuracy</th>
+                  <th>Sensitivity ★</th>
+                  <th>Specificity</th>
+                  <th>AUC</th>
+                </tr>
+              </thead>
+              <tbody id="compareBody">
+                <tr>
+                  <td>KNN (K=5)</td>
+                  <td>78%</td>
+                  <td class="delta warn">62%</td>
+                  <td>85%</td>
+                  <td>0.74</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;">★ Sensitivity = how many of the truly
+            readmitted patients did the model catch? This is the most important metric in screening.</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <small>Step 4 / 7 · Model &amp; Parameters</small>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" data-prev="3">← Previous</button>
+        <button class="btn primary" data-next="5">Next Step →</button>
+      </div>
+    </div>
+  </section>
+
+    <section class="screen" id="step-5">
+    <div class="screen-header">
+      <div>
+        <span class="step-tag">STEP 5 OF 7</span>
+        <h2>Results — How Well Does the Model Perform?</h2>
+        <p>Here we evaluate the model's predictions on the test patients it has never seen before. Accuracy alone is
+          not enough — we examine sensitivity (catching real cases) and specificity (avoiding false alarms).</p>
+      </div>
+      <div class="hdr-right">
+        <button class="btn primary" data-next="6">Next Step →</button>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <!-- 6 metric cards -->
+        <div class="card">
+          <div class="card-title">Performance Metrics — KNN (K=5) on Test Patients</div>
+          <div class="kpis">
+            <div class="kpi">
+              <div class="kpi-val">78%</div>
+              <div class="kpi-name">Accuracy</div>
+              <div class="kpi-note">Overall correct predictions out of all test patients</div>
+            </div>
+            <div class="kpi warn">
+              <div class="kpi-val">62%</div>
+              <div class="kpi-name">Sensitivity ★</div>
+              <div class="kpi-note">Of patients who WERE readmitted, how many did we catch?</div>
+            </div>
+            <div class="kpi good">
+              <div class="kpi-val">85%</div>
+              <div class="kpi-name">Specificity</div>
+              <div class="kpi-note">Of patients who were NOT readmitted, how many did we correctly call safe?</div>
+            </div>
+          </div>
+          <div class="kpis" style="margin-top:10px;">
+            <div class="kpi">
+              <div class="kpi-val">58%</div>
+              <div class="kpi-name">Precision</div>
+              <div class="kpi-note">Of patients we flagged as high risk, how many actually were?</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-val">60%</div>
+              <div class="kpi-name">F1 Score</div>
+              <div class="kpi-note">Balance between catching cases and avoiding false alarms</div>
+            </div>
+            <div class="kpi good">
+              <div class="kpi-val">0.81</div>
+              <div class="kpi-name">AUC-ROC</div>
+              <div class="kpi-note">Overall ability to separate readmitted from not-readmitted (0.5=random,
+                1.0=perfect)</div>
+            </div>
+          </div>
+          <div class="banner bad" style="margin-top:12px;" id="sensitivityWarning">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <path d="M12 9v4"></path>
+                <path d="M12 17h.01"></path>
+              </svg></div>
+            <div><b>Low Sensitivity:</b> This model misses 38% of patients who will actually be readmitted. Go back to
+              Step 4 and try a different model or adjust K.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">ROC Curve — How Well Does the Model Separate the Two Groups?</div>
+          <svg class="roc-svg" viewBox="0 0 300 160" preserveAspectRatio="xMidYMid meet"
+            style="border:1px solid var(--line);border-radius:12px;background:#f7f9fb">
+            <text x="10" y="14" fill="currentColor" style="color:var(--text-muted)" font-size="9"
+              font-family="DM Mono">1.0</text>
+            <text x="10" y="152" fill="currentColor" style="color:var(--text-muted)" font-size="9"
+              font-family="DM Mono">0</text>
+            <text x="270" y="152" fill="currentColor" style="color:var(--text-muted)" font-size="9"
+              font-family="DM Mono">1.0</text>
+            <line x1="30" y1="10" x2="30" y2="150" stroke="#dde4ea" stroke-width="1" />
+            <line x1="30" y1="150" x2="290" y2="150" stroke="#dde4ea" stroke-width="1" />
+            <!-- Diagonal (random) -->
+            <line x1="30" y1="150" x2="290" y2="10" stroke="#dde4ea" stroke-width="1" stroke-dasharray="4,3" />
+            <!-- ROC curve -->
+            <path d="M30,150 C60,120 80,60 120,40 C160,22 200,15 290,10" fill="none" stroke="currentColor"
+              style="color:var(--primary)" stroke-width="2.5" />
+            <text x="100" y="90" fill="currentColor" style="color:var(--primary)" font-size="10" font-weight="bold"
+              font-family="DM Sans">AUC = 0.81</text>
+          </svg>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4;">A perfect model would go
+            straight to the top-left corner. Our curve (blue) is well above the diagonal line (random guessing), which
+            is good. AUC of 0.81 = good discriminative ability.</div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="card">
+          <div class="card-title">Confusion Matrix — What Did the Model Get Right and Wrong?</div>
+          <div style="font-size:12px;color:var(--mid);margin-bottom:10px;">This 2×2 table shows the model's
+            predictions vs. what actually happened for the 61 test patients.</div>
+          <div class="cm-grid">
+            <div class="cm-corner"></div>
+            <div class="cm-col-hdr">Predicted: NOT Readmitted</div>
+            <div class="cm-col-hdr">Predicted: READMITTED</div>
+            <div class="cm-row-hdr"
+              style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;font-weight:600;color:var(--muted);">
+              Actual: NOT Readmitted</div>
+            <div class="cm-cell cm-tn">
+              <div class="cm-num">36</div>
+              <div class="cm-lbl"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg> Correctly called safe</div>
+            </div>
+            <div class="cm-cell cm-fp">
+              <div class="cm-num">5</div>
+              <div class="cm-lbl"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <path d="M12 9v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg> False alarm (extra follow-up)</div>
+            </div>
+            <div class="cm-row-hdr"
+              style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;font-weight:600;color:var(--muted);">
+              Actual: READMITTED</div>
+            <div class="cm-cell cm-fn">
+              <div class="cm-num">8</div>
+              <div class="cm-lbl">❌ Missed — returned to hospital</div>
+            </div>
+            <div class="cm-cell cm-tp">
+              <div class="cm-num">12</div>
+              <div class="cm-lbl"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg> Correctly flagged high-risk</div>
+            </div>
+          </div>
+          <div class="banner bad" style="margin-top:12px;">
+            <div class="banner-icon">❌</div>
+            <div><b>8 patients were missed (False Negatives).</b> These patients were sent home without extra support
+              but returned to hospital within 30 days. In clinical practice, reducing these is the priority.</div>
+          </div>
+          <div class="banner info" style="margin-top:8px;">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--info);">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+              </svg></div>
+            <div><b>5 False Positives</b> caused unnecessary follow-up calls. This is a cost, but not a safety risk.
+              Usually preferable to missing real readmissions.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <small>Step 5 / 7 · Results &amp; Evaluation</small>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" data-prev="4">← Previous</button>
+        <button class="btn primary" data-next="6">Next Step →</button>
+      </div>
+    </div>
+  </section>
+
+    <section class="screen" id="step-6">
+    <div class="screen-header">
+      <div>
+        <span class="step-tag">STEP 6 OF 7</span>
+        <h2>Explainability — Why Did the Model Make This Prediction?</h2>
+        <p>A model that cannot explain itself should not be trusted in clinical settings. Here we look at which
+          patient measurements were most important, and why a specific patient was flagged as high risk.</p>
+      </div>
+      <div class="hdr-right">
+        <button class="btn primary" data-next="7">Next Step →</button>
+      </div>
+    </div>
+    <div class="cols">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="card">
+          <div class="card-title">Most Important Patient Measurements (Overall)</div>
+          <div class="bars">
+            <div class="bar-row">
+              <div class="bar-lbl">Ejection Fraction</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:82%"></div>
+              </div>
+              <div class="bar-val">0.28</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">Serum Creatinine</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:66%"></div>
+              </div>
+              <div class="bar-val">0.22</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">Age</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:54%"></div>
+              </div>
+              <div class="bar-val">0.17</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">Time in Hospital</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:40%"></div>
+              </div>
+              <div class="bar-val">0.13</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">Serum Sodium</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:28%"></div>
+              </div>
+              <div class="bar-val">0.09</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">Smoking Status</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:16%"></div>
+              </div>
+              <div class="bar-val">0.05</div>
+            </div>
+          </div>
+          <div class="banner info" style="margin-top:12px;">
+            <div class="banner-icon">💡</div>
+            <div><b>Clinical sense check:</b> Ejection fraction (how well the heart pumps) and creatinine (kidney
+              function) are the top predictors. This makes strong clinical sense — both are established readmission
+              risk factors in heart failure.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Single Patient Explanation</div>
+          <label class="lbl">Select a Test Patient</label>
+          <select class="sel" id="caseSelect">
+            <option value="47">Patient #47 · Age 71 · EF 20% · HIGH RISK (78%)</option>
+            <option value="12">Patient #12 · Age 45 · EF 55% · LOW RISK (21%)</option>
+            <option value="93">Patient #93 · Age 62 · EF 38% · MODERATE (51%)</option>
+          </select>
+          <div class="btn-row"><button class="btn teal" id="explainPatientBtn" style="width:100%;">Explain This Patient →</button></div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="card" id="patientExplainCard">
+          <div class="card-title" id="patientExplainTitle">Why Was Patient #47 Flagged as HIGH RISK? (78% probability)</div>
+          <div style="font-size:12px;color:var(--mid);margin-bottom:12px;">Each bar shows how much a measurement
+            pushed the prediction toward or away from readmission. The longer the bar, the stronger the effect.</div>
+          <div class="bars" id="patientExplainBars">
+            <div class="bar-row">
+              <div class="bar-lbl" style="color:var(--bad);">↑ EF very low (20%)</div>
+              <div class="bar-track">
+                <div class="bar-fill bad" style="width:80%"></div>
+              </div>
+              <div class="bar-val" style="color:var(--bad);">+0.24</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl" style="color:var(--bad);">↑ Age 71</div>
+              <div class="bar-track">
+                <div class="bar-fill bad" style="width:58%"></div>
+              </div>
+              <div class="bar-val" style="color:var(--bad);">+0.16</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl" style="color:var(--bad);">↑ Creatinine 2.1</div>
+              <div class="bar-track">
+                <div class="bar-fill bad" style="width:46%"></div>
+              </div>
+              <div class="bar-val" style="color:var(--bad);">+0.12</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl" style="color:var(--good);">↓ Non-smoker</div>
+              <div class="bar-track">
+                <div class="bar-fill teal" style="width:20%"></div>
+              </div>
+              <div class="bar-val" style="color:var(--good);">-0.05</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl" style="color:var(--good);">↓ Sodium normal</div>
+              <div class="bar-track">
+                <div class="bar-fill teal" style="width:14%"></div>
+              </div>
+              <div class="bar-val" style="color:var(--good);">-0.03</div>
+            </div>
+          </div>
+          <div class="banner warn" style="margin-top:12px;">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <path d="M12 9v4"></path>
+                <path d="M12 17h.01"></path>
+              </svg></div>
+            <div><b>Important:</b> These are associations, not causes. The model says ejection fraction is important
+              for this prediction — a cardiologist must decide whether and how to act.</div>
+          </div>
+          <div class="banner info" id="patientWhatIfBanner" style="margin-top:8px;">
+            <div class="banner-icon">💡</div>
+            <div><b>What-if:</b> What if this patient's creatinine were 1.2 instead of 2.1? The predicted risk would
+              drop to approximately 61%. This kind of thinking helps assess which interventions might help.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <small>Step 6 / 7 · Explainability</small>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" data-prev="5">← Previous</button>
+        <button class="btn primary" data-next="7">Next Step →</button>
+      </div>
+    </div>
+  </section>
+
+    <section class="screen" id="step-7">
+    <div class="screen-header">
+      <div>
+        <span class="step-tag">STEP 7 OF 7</span>
+        <h2>Ethics &amp; Bias — Is This Model Fair for All Patients?</h2>
+        <p>Before any AI tool is used in a hospital, it must be checked for fairness across different patient groups.
+          A model that works well on average but poorly for elderly or female patients is not safe to deploy.</p>
+      </div>
+      <div class="hdr-right">
+        <button class="btn teal" id="downloadSummaryBtn">📄 Download Summary Certificate</button>
+      </div>
+    </div>
+
+    <div class="cols wide">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Subgroup Performance — Is the Model Fair?</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Patient Group</th>
+                  <th>Accuracy</th>
+                  <th>Sensitivity</th>
+                  <th>Specificity</th>
+                  <th>Fairness</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Male</td>
+                  <td>81%</td>
+                  <td class="delta good">67%</td>
+                  <td>88%</td>
+                  <td><span class="tag good">OK</span></td>
+                </tr>
+                <tr>
+                  <td>Female</td>
+                  <td>73%</td>
+                  <td class="delta bad">41%</td>
+                  <td>83%</td>
+                  <td><span class="tag bad">⚠ Review Needed</span></td>
+                </tr>
+                <tr>
+                  <td>Age 18–60</td>
+                  <td>80%</td>
+                  <td class="delta good">65%</td>
+                  <td>87%</td>
+                  <td><span class="tag good">OK</span></td>
+                </tr>
+                <tr>
+                  <td>Age 61–75</td>
+                  <td>77%</td>
+                  <td class="delta warn">58%</td>
+                  <td>84%</td>
+                  <td><span class="tag warn">Review</span></td>
+                </tr>
+                <tr>
+                  <td>Age 76+</td>
+                  <td>71%</td>
+                  <td class="delta bad">39%</td>
+                  <td>80%</td>
+                  <td><span class="tag bad">⚠ Review Needed</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="banner bad" style="margin-top:10px;">
+            <div class="banner-icon">🚨</div>
+            <div><b>Bias Detected:</b> Sensitivity for female patients (41%) is 26 percentage points lower than for
+              male patients (67%). This means the model misses far more readmissions in women. <b>This model should
+                NOT be deployed until this gap is addressed.</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">EU AI Act Compliance Checklist</div>
+          <div class="checklist" id="euChecklist">
+            <div class="check-item checked" onclick="toggleCheck(this)">
+              <div class="check-box">✓</div>
+              <div class="check-text"><b>Model is explainable (outputs have reasons)</b><small>We implemented feature
+                  importance and per-patient explanations in Step 6</small></div>
+            </div>
+            <div class="check-item checked" onclick="toggleCheck(this)">
+              <div class="check-box">✓</div>
+              <div class="check-text"><b>Training data is documented</b><small>Dataset source, size, time period, and
+                  patient demographics are recorded</small></div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <div class="check-text"><b>Subgroup bias audit completed</b><small>Performance gaps between male/female
+                  and age groups must be addressed before deployment</small></div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <div class="check-text"><b>Human oversight plan defined</b><small>A qualified clinician must review all
+                  high-risk flags before any action is taken</small></div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <div class="check-text"><b>Patient data privacy protected</b><small>GDPR compliant: no personally
+                  identifiable information used in model training</small></div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <div class="check-text"><b>Drift monitoring plan established</b><small>Model accuracy must be re-checked
+                  every 3 months as patient population changes</small></div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <div class="check-text"><b>Incident reporting pathway defined</b><small>If the model causes harm, there
+                  is a clear process for reporting and review</small></div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <div class="check-text"><b>Clinical validation completed</b><small>Model tested in real clinical
+                  environment with supervision before full deployment</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Training Data Representation vs. Real Patient Population</div>
+          <div class="bars">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:8px;">TRAINING DATA</div>
+            <div class="bar-row">
+              <div class="bar-lbl">Male patients</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:65%"></div>
+              </div>
+              <div class="bar-val">65%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">Female patients</div>
+              <div class="bar-track">
+                <div class="bar-fill warn" style="width:35%"></div>
+              </div>
+              <div class="bar-val">35%</div>
+            </div>
+            <div style="font-size:11px;font-weight:600;color:var(--muted);margin:12px 0 8px;">REAL HOSPITAL POPULATION
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">Male patients</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:48%"></div>
+              </div>
+              <div class="bar-val">48%</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-lbl">Female patients</div>
+              <div class="bar-track">
+                <div class="bar-fill teal" style="width:52%"></div>
+              </div>
+              <div class="bar-val">52%</div>
+            </div>
+          </div>
+          <div class="banner warn" style="margin-top:10px;">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <path d="M12 9v4"></path>
+                <path d="M12 17h.01"></path>
+              </svg></div>
+            <div><b>Under-representation:</b> Only 35% of training patients were female, but 52% of real patients are
+              female. This mismatch explains the model's poor performance for women. Retrain with a more balanced
+              dataset.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Real-World AI Failures in Healthcare — What Goes Wrong</div>
+          <div style="display:grid;gap:8px;">
+            <div style="padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bad-bg);">
+              <div style="font-size:12px;font-weight:600;color:var(--bad);margin-bottom:4px;">⚠ Case 1: Sepsis
+                Algorithm Bias</div>
+              <div style="font-size:12px;color:var(--mid);line-height:1.5;">An ICU sepsis prediction algorithm was
+                found to perform significantly worse for Black patients because it was trained mostly on data from
+                white patients. Hospitals had to suspend the tool and retrain it with representative data.</div>
+            </div>
+            <div style="padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--warn-bg);">
+              <div style="font-size:12px;font-weight:600;color:var(--warn);margin-bottom:4px;">⚠ Case 2: Accuracy ≠
+                Safety</div>
+              <div style="font-size:12px;color:var(--mid);line-height:1.5;">A readmission model with 85% overall
+                accuracy was deployed but had only 30% sensitivity for elderly patients — the highest-risk group. The
+                hospital reported more missed readmissions after deploying the AI than before.</div>
+            </div>
+            <div style="padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--info-bg);">
+              <div style="font-size:12px;font-weight:600;color:var(--info);margin-bottom:4px;"><svg width="20"
+                  height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg> How to Prevent This
+              </div>
+              <div style="font-size:12px;color:var(--mid);line-height:1.5;">Always check subgroup performance. Always
+                require human review. Always retrain periodically. Never deploy based on overall accuracy alone.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="banner good" style="margin-top:14px;">
+        <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg></div>
+        <div><b>Congratulations — you have completed all 7 steps.</b> You have defined a clinical problem, explored
+          patient data, prepared it correctly, trained and compared ML models, evaluated results with clinical
+          metrics, understood why the model makes predictions, and checked it for fairness. Download your Summary
+          Certificate to document what you built.</div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <small>Step 7 / 7 · Ethics &amp; Bias</small>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" data-prev="6">← Previous</button>
+        <button class="btn teal" id="downloadSummaryBtnFooter">📄 Download Summary Certificate</button>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /wrap -->
+
+  <!-- ACCESSIBILITY MODAL -->
+  <div class="a11y-overlay" id="a11yOverlay">
+    <div class="a11y-box">
+      <div class="a11y-title-row">
+        <div class="a11y-title">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4" />
+            <path d="M12 8h.01" />
+            <path d="M8 12h8" />
+          </svg>
+          Accessibility Settings
+        </div>
+        <button class="a11y-close" id="a11yCloseBtn">✕</button>
+      </div>
+
+      <div class="a11y-setting">
+        <div class="a11y-setting-title">Text Size</div>
+        <div class="a11y-toggle-group">
+          <button class="a11y-toggle-btn active" id="btnTextStandard">Standard (14px)</button>
+          <button class="a11y-toggle-btn" id="btnTextLarge">Large + (17px)</button>
+        </div>
+      </div>
+
+      <div class="a11y-setting">
+        <div class="a11y-setting-title">Visual Contrast Mode</div>
+        <div class="a11y-toggle-group">
+          <button class="a11y-toggle-btn active" id="btnContrastStandard">Standard</button>
+          <button class="a11y-toggle-btn" id="btnContrastHigh">Colorblind (High Contrast)</button>
+        </div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 10px; line-height: 1.5;">High Contrast mode
+          applies the WCAG AAA Okabe-Ito color palette and bold architectural borders.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRM MODAL -->
+  <div class="custom-confirm-overlay" id="customConfirmOverlay">
+    <div class="custom-confirm-box">
+      <div class="custom-confirm-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+          <path d="M12 9v4"></path>
+          <path d="M12 17h.01"></path>
+        </svg></div>
+      <div class="custom-confirm-title" id="customConfirmTitle">Are you sure?</div>
+      <div class="custom-confirm-message" id="customConfirmMessage">This action cannot be undone.</div>
+      <div class="custom-confirm-actions">
+        <button class="btn" id="customConfirmCancel">Cancel</button>
+        <button class="btn primary" id="customConfirmOk">Yes, proceed</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════ COLUMN MAPPER MODAL ══════════════════════════ -->
+  <div class="modal-back" id="mapperBack">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3>Column Mapper &amp; Schema Validator</h3>
+          <p>Assign a role to each column in your dataset. This prevents the model from accidentally using patient IDs
+            or other non-clinical information that would give misleading results.</p>
+        </div>
+        <button class="btn" id="closeMapper">✕ Close</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <div class="card">
+            <div class="card-title">Settings</div>
+            <label class="lbl">Problem Type</label>
+            <select class="sel">
+              <option selected>Binary classification (Yes / No outcome)</option>
+              <option>Multi-class (3+ categories)</option>
+              <option>Regression (numeric prediction)</option>
+            </select>
+            <label class="lbl">Target Column (What We Are Predicting)</label>
+            <select class="sel">
+              <option selected>Readmitted_30d</option>
+              <option>Mortality_90d</option>
+              <option>Diagnosis_Class</option>
+            </select>
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+              <span class="status-pill"><span class="s-pill-dot" id="schDot"></span> Schema: <b id="schStatus">Needs
+                  review</b></span>
+              <span class="status-pill">Identifiers found: <b>1</b></span>
+              <span class="status-pill">Target missing: <b>0%</b></span>
+            </div>
+            <div id="mapBanner" class="banner warn" style="margin-top:10px;">
+              <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <path d="M12 9v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg></div>
+              <div><b>Warning:</b> patient_id appears to be an identifier (random text/number). Set its role to "Ignore"
+                — it is not a clinical measurement and would mislead the model.</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn" id="validateSchema">Validate Schema</button>
+              <button class="btn teal" id="saveMapping">Save Mapping</button>
+            </div>
+          </div>
+          <div class="card" style="margin-top:12px;">
+            <div class="card-title">Data Preview (First 5 Rows)</div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Column</th>
+                    <th>Sample Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-family:var(--mono);font-size:12px;">Age</td>
+                    <td>62</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--mono);font-size:12px;">Ejection_Fraction</td>
+                    <td>38</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--mono);font-size:12px;">Serum_Creatinine</td>
+                    <td>1.3</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--mono);font-size:12px;">Smoker</td>
+                    <td>Yes</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--mono);font-size:12px;">patient_id</td>
+                    <td>PX-88412</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family:var(--mono);font-size:12px;">Readmitted_30d</td>
+                    <td>1</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Column Roles — Drag to Assign</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Column Name</th>
+                  <th>Auto-Detected</th>
+                  <th>Assign Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Readmitted_30d</td>
+                  <td><span class="tag good">Binary (0/1)</span></td>
+                  <td><select class="sel">
+                      <option selected>Target (what we predict)</option>
+                      <option>Number</option>
+                      <option>Category</option>
+                      <option>Ignore</option>
+                    </select></td>
+                </tr>
+                <tr>
+                  <td>Age</td>
+                  <td><span class="tag good">Number</span></td>
+                  <td><select class="sel">
+                      <option>Target</option>
+                      <option selected>Number (measurement)</option>
+                      <option>Category</option>
+                      <option>Ignore</option>
+                    </select></td>
+                </tr>
+                <tr>
+                  <td>Ejection_Fraction</td>
+                  <td><span class="tag good">Number</span></td>
+                  <td><select class="sel">
+                      <option>Target</option>
+                      <option selected>Number (measurement)</option>
+                      <option>Category</option>
+                      <option>Ignore</option>
+                    </select></td>
+                </tr>
+                <tr>
+                  <td>Serum_Creatinine</td>
+                  <td><span class="tag warn">Number · 6.8% missing</span></td>
+                  <td><select class="sel">
+                      <option>Target</option>
+                      <option selected>Number (measurement)</option>
+                      <option>Category</option>
+                      <option>Ignore</option>
+                    </select></td>
+                </tr>
+                <tr>
+                  <td>Smoker</td>
+                  <td><span class="tag good">Category</span></td>
+                  <td><select class="sel">
+                      <option>Target</option>
+                      <option>Number</option>
+                      <option selected>Category</option>
+                      <option>Ignore</option>
+                    </select></td>
+                </tr>
+                <tr>
+                  <td>patient_id</td>
+                  <td><span class="tag bad">Identifier-like</span></td>
+                  <td><select class="sel" id="idRole">
+                      <option>Target</option>
+                      <option>Number</option>
+                      <option>Category</option>
+                      <option selected>Ignore (not a measurement)</option>
+                    </select></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="banner info" style="margin-top:10px;">
+            <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--info);">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+              </svg></div>
+            <div><b>Blocking rules:</b> No target column = blocked · Target column has more than 20% missing values =
+              blocked · All columns set to Ignore = blocked</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <div style="font-size:12px;color:var(--muted);">Save the mapping to unlock Step 3.</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" id="cancelMapper">Cancel</button>
+          <button class="btn teal" id="saveAndClose">Save &amp; Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="app.js"></script>
+</body>
+</html>
