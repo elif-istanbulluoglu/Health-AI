@@ -53,9 +53,28 @@ function loadTargetCol() {
   try { return sessionStorage.getItem(SS.TARGET_COL) || ''; } catch(e) { return ''; }
 }
 
+// ── IDENTIFIER & TARGET HEURISTICS ───────────────────────────────
+function _looksLikeId(name) {
+  const n = name.toLowerCase().replace(/[_\s\-]/g, '');
+  const exact = ['id','pid','uid','sid','cid','rid','eid','mrn','ssn','nhs','accession'];
+  return exact.includes(n) || n.endsWith('id');
+}
+
+function _looksLikeTarget(name) {
+  const n = name.toLowerCase().replace(/[_\s\-]/g, '');
+  const keywords = [
+    'death','died','mortality','survive','survival',
+    'readmit','admission','rehospital',
+    'outcome','result','label','target','class','status','condition',
+    'disease','disorder','diagnosis','diagnosed',
+    'event','failure','stroke','attack','cancer','tumor','positive',
+    'heartdisease','heartfailure','chd','mi','cvd',
+  ];
+  return keywords.some(k => n.includes(k));
+}
+
 // ── CSV ANALYSIS ─────────────────────────────────────────────────
 function analyseCSV(parsedData) {
-  // parsedData: { data: [{col:val,...},...], meta: {fields:[...]} }
   const fields = parsedData.meta.fields || [];
   const rows = parsedData.data.filter(r => Object.values(r).some(v => v !== '' && v !== null && v !== undefined));
 
@@ -67,29 +86,38 @@ function analyseCSV(parsedData) {
     const missingCount = values.length - nonEmpty.length;
     const missingPct = +(missingCount / values.length * 100).toFixed(1);
 
-    // Detect type
-    const numericValues = nonEmpty.map(v => parseFloat(v)).filter(v => !isNaN(v));
-    const isNumeric = numericValues.length / nonEmpty.length > 0.9;
-    const uniqueValues = [...new Set(nonEmpty.map(v => String(v).trim()))];
-    const isBinary = uniqueValues.length === 2;
+    const strValues = nonEmpty.map(v => String(v).trim());
+    const uniqueValues = [...new Set(strValues)];
+
+    // Numeric detection
+    const numericValues = strValues.map(v => parseFloat(v)).filter(v => !isNaN(v));
+    const isNumeric = nonEmpty.length > 0 && (numericValues.length / nonEmpty.length) > 0.9;
+
+    // Identifier = non-numeric text column where every value is unique.
+    // Numeric columns (age, score, frequency) are NEVER identifiers even if all unique.
+    // For small datasets (<30 rows) require the column name to look like an ID,
+    // because coincidental all-unique is common in small data.
     const isIdentifier = (
-      uniqueValues.length === rows.length ||
-      (name.toLowerCase().includes('id') && uniqueValues.length > rows.length * 0.8)
+      !isNumeric &&
+      uniqueValues.length === rows.length &&
+      (rows.length >= 30 || _looksLikeId(name))
     );
 
-    let type = 'text';
-    if (isIdentifier) type = 'identifier';
-    else if (isNumeric && isBinary) type = 'binary';
-    else if (isNumeric) type = 'numeric';
-    else if (isBinary) type = 'binary';
+    // Type classification
+    let type;
+    if (isIdentifier)                   type = 'identifier';
+    else if (uniqueValues.length === 2) type = 'binary';    // 0/1, Yes/No, Male/Female …
+    else if (isNumeric)                 type = 'numeric';
+    else if (uniqueValues.length <= 20) type = 'category';  // manageable text cardinality
+    else                                type = 'text';      // high-cardinality free text
 
-    // Suggest role
-    const lname = name.toLowerCase();
-    let role = 'feature';
-    if (isIdentifier) role = 'ignore';
-    else if (lname.includes('death') || lname.includes('readmit') || lname.includes('outcome') || lname.includes('target') || lname.includes('label')) role = 'target';
+    // Role suggestion
+    let role;
+    if (isIdentifier)              role = 'ignore';
+    else if (_looksLikeTarget(name)) role = 'target';
+    else                           role = 'feature';
 
-    // Stats for numeric
+    // Stats
     let stats = {};
     if (isNumeric && numericValues.length > 0) {
       const sorted = [...numericValues].sort((a, b) => a - b);
@@ -103,13 +131,30 @@ function analyseCSV(parsedData) {
     return { name, type, role, missingPct, missingCount, uniqueCount: uniqueValues.length, stats, values: nonEmpty };
   });
 
-  // Must have at least one numeric column
+  // At least one numeric or binary column required
   const hasNumeric = columns.some(c => c.type === 'numeric' || c.type === 'binary');
-  if (!hasNumeric) throw new Error('File has no numeric measurement columns. At least one is required.');
+  if (!hasNumeric) throw new Error('File has no numeric or binary measurement columns. At least one is required.');
 
-  // Compute class balance for suggested target
-  const targetCol = columns.find(c => c.role === 'target') || columns[columns.length - 1];
-  const classBalance = computeClassBalance(rows, targetCol.name);
+  // ── Resolve exactly ONE target ───────────────────────────────────
+  const targetMatches = columns.filter(c => c.role === 'target');
+
+  if (targetMatches.length === 0) {
+    // Fallback: last non-ignored column (outcome is almost always last by convention)
+    const eligible = columns.filter(c => c.role !== 'ignore');
+    if (eligible.length > 0) eligible[eligible.length - 1].role = 'target';
+  } else if (targetMatches.length > 1) {
+    // Keep best match: binary > numeric > category; last wins among ties
+    let best = null;
+    for (const pref of ['binary', 'numeric', 'category']) {
+      const typed = targetMatches.filter(c => c.type === pref);
+      if (typed.length > 0) { best = typed[typed.length - 1]; break; }
+    }
+    if (!best) best = targetMatches[targetMatches.length - 1];
+    targetMatches.forEach(c => { if (c !== best) c.role = 'feature'; });
+  }
+
+  const finalTarget = columns.find(c => c.role === 'target');
+  const classBalance = finalTarget ? computeClassBalance(rows, finalTarget.name) : null;
   const totalMissingPct = +(columns.reduce((s, c) => s + c.missingPct, 0) / columns.length).toFixed(1);
   const imbalanceRatio = classBalance ? computeImbalanceRatio(classBalance) : null;
 
@@ -118,11 +163,11 @@ function analyseCSV(parsedData) {
     source: 'User Upload',
     rows: rows.length,
     columns,
-    targetColumn: targetCol.name,
+    targetColumn: finalTarget ? finalTarget.name : columns[columns.length - 1].name,
     classBalance,
     imbalanceRatio,
     totalMissingPct,
-    rawRows: rows,  // kept in session for downstream steps
+    rawRows: rows,
   };
 }
 
@@ -227,15 +272,39 @@ function renderFeaturesTable(ds) {
     return '<span class="tag good">Ready</span>';
   };
 
-  const typeLabel = (t) => ({ numeric: 'Number', binary: 'Binary (0/1)', text: 'Text', identifier: 'Identifier' }[t] || t);
+  const typeLabel = (col) => ({ numeric: 'Number', binary: `Binary (${col.uniqueCount} values)`, category: `Category (${col.uniqueCount})`, text: 'Text', identifier: 'Identifier' }[col.type] || col.type);
 
   tbody.innerHTML = ds.columns.map(col => `
     <tr>
       <td style="font-family:var(--mono);font-size:12px;">${col.name}</td>
-      <td>${typeLabel(col.type)}</td>
+      <td>${typeLabel(col)}</td>
       <td>${col.missingPct > 0 ? col.missingPct + '%' : '0%'}</td>
       <td>${actionTag(col)}</td>
     </tr>`).join('');
+}
+
+// ── SYNC CUSTOM DROPDOWN TEXT ────────────────────────────────────
+// After programmatically changing a <select>'s value, the custom
+// premium dropdown overlay won't update on its own — this forces it.
+function _syncTargetSelUI(targetName) {
+  const sel = document.getElementById('targetCol');
+  if (!sel) return;
+  // Update the native select
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === targetName) {
+      sel.selectedIndex = i;
+      break;
+    }
+  }
+  // Update the custom wrapper overlay if present
+  const wrapper = sel.nextElementSibling;
+  if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
+    const textSpan = wrapper.querySelector('.custom-select-text');
+    if (textSpan) textSpan.textContent = sel.options[sel.selectedIndex]?.text || targetName;
+    wrapper.querySelectorAll('.custom-option').forEach((opt, idx) => {
+      opt.classList.toggle('selected', idx === sel.selectedIndex);
+    });
+  }
 }
 
 function renderTargetSelector(ds) {
@@ -246,26 +315,30 @@ function renderTargetSelector(ds) {
     sel.nextElementSibling.remove();
   }
 
-  // Populate with actual columns from dataset (excluding identifiers)
+  // Populate with actual columns from dataset (excluding identifiers and free text)
   sel.innerHTML = ds.columns
-    .filter(c => c.type !== 'identifier')
+    .filter(c => c.type !== 'identifier' && c.type !== 'text')
     .map(c => `<option value="${c.name}" ${c.name === ds.targetColumn ? 'selected' : ''}>${c.name}${c.name === ds.targetColumn ? ' (recommended)' : ''}</option>`)
     .join('');
 
+  // IMPORTANT: Remove any old change listeners before adding a new one to prevent duplicate triggers
+  const newSel = sel.cloneNode(true);
+  sel.parentNode.replaceChild(newSel, sel);
+
   // Save choice
-  sel.addEventListener('change', () => { 
-    saveTargetCol(sel.value); 
-    ds.targetColumn = sel.value;
+  newSel.addEventListener('change', () => { 
+    saveTargetCol(newSel.value); 
+    ds.targetColumn = newSel.value;
     
     // Sync roles to avoid duplicate targets
     const roles = loadColumnRoles();
     Object.keys(roles).forEach(k => {
-      if (roles[k] === 'target' && k !== sel.value) {
+      if (roles[k] === 'target' && k !== newSel.value) {
         const cInfo = ds.columns.find(c => c.name === k);
         roles[k] = (cInfo && cInfo.type === 'binary') ? 'category' : 'numeric';
       }
     });
-    roles[sel.value] = 'target';
+    roles[newSel.value] = 'target';
     saveColumnRoles(roles);
 
     saveDataset(ds);
@@ -274,8 +347,22 @@ function renderTargetSelector(ds) {
   });
   saveTargetCol(ds.targetColumn);
 
-  // Re-init custom dropdowns if present
-  if (typeof initPremiumDropdowns === 'function') setTimeout(initPremiumDropdowns, 50);
+  // Re-init custom dropdowns then force correct text
+  if (typeof initPremiumDropdowns === 'function') {
+    newSel.style.removeProperty('display');
+    initPremiumDropdowns();
+  }
+  // Belt-and-suspenders: directly set the wrapper text to the selected option
+  setTimeout(() => {
+    const wrapper = newSel.nextElementSibling;
+    if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
+      const textSpan = wrapper.querySelector('.custom-select-text');
+      if (textSpan) textSpan.textContent = newSel.options[newSel.selectedIndex]?.text || ds.targetColumn;
+      wrapper.querySelectorAll('.custom-option').forEach((opt, idx) => {
+        opt.classList.toggle('selected', idx === newSel.selectedIndex);
+      });
+    }
+  }, 0);
 }
 
 // ── MAPPER POPULATION ────────────────────────────────────────────
@@ -307,11 +394,14 @@ function populateMapper(ds) {
   };
 
   const typeTag = (col) => {
-    if (col.type === 'identifier') return '<span class="tag bad">Identifier-like</span>';
-    if (col.missingPct > 0)        return `<span class="tag warn">Number · ${col.missingPct}% missing</span>`;
-    if (col.type === 'binary')     return '<span class="tag good">Binary (0/1)</span>';
-    if (col.type === 'numeric')    return '<span class="tag good">Number</span>';
-    return '<span class="tag info">Text / Category</span>';
+    if (col.type === 'identifier')  return '<span class="tag bad">Identifier-like</span>';
+    if (col.type === 'binary'   && col.missingPct > 0) return `<span class="tag warn">Binary · ${col.missingPct}% missing</span>`;
+    if (col.type === 'numeric'  && col.missingPct > 0) return `<span class="tag warn">Number · ${col.missingPct}% missing</span>`;
+    if (col.type === 'category' && col.missingPct > 0) return `<span class="tag warn">Category · ${col.missingPct}% missing</span>`;
+    if (col.type === 'binary')      return `<span class="tag good">Binary (${col.uniqueCount} values)</span>`;
+    if (col.type === 'numeric')     return '<span class="tag good">Number</span>';
+    if (col.type === 'category')    return `<span class="tag info">Category (${col.uniqueCount} values)</span>`;
+    return '<span class="tag info">Text</span>';
   };
 
   const savedRoles = loadColumnRoles();
@@ -330,7 +420,11 @@ function populateMapper(ds) {
 
   tbody.innerHTML = ds.columns.map(col => {
     const role = savedRoles[col.name] || col.role;
-    const roleForSelect = role === 'target' ? 'target' : role === 'ignore' ? 'ignore' : col.type === 'binary' ? 'category' : 'numeric';
+    let roleForSelect;
+    if (role === 'target') roleForSelect = 'target';
+    else if (role === 'ignore') roleForSelect = 'ignore';
+    else if (col.type === 'category' || col.type === 'text' || col.type === 'binary') roleForSelect = 'category';
+    else roleForSelect = 'numeric';
     return `<tr>
       <td>${col.name}</td>
       <td>${typeTag(col)}</td>
@@ -477,14 +571,33 @@ function validateMapper() {
 
   const roles = loadColumnRoles();
 
+  // User's current choice in mapper overrides stale stored ds.targetColumn
+  const mapperTargetEl = document.getElementById('mapperTargetCol');
+  const effectiveTarget = (mapperTargetEl && mapperTargetEl.value && ds.columns.some(c => c.name === mapperTargetEl.value))
+    ? mapperTargetEl.value
+    : ds.targetColumn;
+
   // Assign defaults for columns without explicit roles
+  const activeRoles = {};
   ds.columns.forEach(col => {
-    if (!roles[col.name]) roles[col.name] = col.role;
+    let role = roles[col.name] || col.role;
+    // Resolve abstract 'feature' role (from analyseCSV) into specific dropdown equivalents
+    if (role === 'feature') {
+      role = (col.type === 'binary' || col.type === 'category' || col.type === 'text') ? 'category' : 'numeric';
+    }
+    // Enforce exclusivity: use effectiveTarget (mapper choice) as single source of truth
+    if (role === 'target' && col.name !== effectiveTarget) {
+      role = (col.type === 'binary' || col.type === 'category' || col.type === 'text') ? 'category' : 'numeric';
+    }
+    if (col.name === effectiveTarget) {
+      role = 'target';
+    }
+    activeRoles[col.name] = role;
   });
 
-  const targetCols = Object.entries(roles).filter(([, r]) => r === 'target');
-  const featureCols = Object.entries(roles).filter(([, r]) => r === 'numeric' || r === 'category');
-  const ignoreCols = Object.entries(roles).filter(([, r]) => r === 'ignore');
+  const targetCols = Object.entries(activeRoles).filter(([, r]) => r === 'target');
+  const featureCols = Object.entries(activeRoles).filter(([, r]) => r === 'numeric' || r === 'category');
+  const ignoreCols = Object.entries(activeRoles).filter(([, r]) => r === 'ignore');
 
   if (targetCols.length === 0) return { ok: false, msg: 'No target column assigned. Set one column as "Target".' };
   if (targetCols.length > 1)  return { ok: false, msg: 'More than one target column assigned. Keep exactly one.' };
@@ -496,8 +609,10 @@ function validateMapper() {
     return { ok: false, msg: `Target column "${targetName}" has ${targetColInfo.missingPct}% missing values. This is too high.` };
   }
 
+  ds.targetColumn = targetName;
   saveTargetCol(targetName);
-  saveColumnRoles(roles);
+  saveColumnRoles(activeRoles);
+  saveDataset(ds);
 
   const warnings = [];
   if (ignoreCols.length === 0 && ds.columns.some(c => c.type === 'identifier')) {
@@ -569,93 +684,158 @@ document.addEventListener('DOMContentLoaded', function () {
   const _origSaveMapping = document.getElementById('saveMapping');
   const _origSaveAndClose = document.getElementById('saveAndClose');
 
-  function _doSave() {
+  function _doSave(closeAfter) {
     const result = validateMapper();
-    if (!result.ok) return false;
+    if (!result.ok) {
+      document.getElementById('validateSchema')?.click(); // trigger error UI
+      return false;
+    }
     saveSchemaOK(true);
     updateSchemaBanner();
     
-    // Also update target column and refresh dataset UI
+    // Update target column and refresh all UI
     const ds = loadDataset();
     if (ds && result.targetName) {
+      // Update column roles to match validated target
+      ds.columns.forEach(c => {
+        if (c.name === result.targetName) c.role = 'target';
+        else if (c.role === 'target')     c.role = 'feature';
+      });
       ds.targetColumn = result.targetName;
+      // Recompute class balance for the new target
+      if (ds.rawRows && ds.rawRows.length > 0) {
+        ds.classBalance = computeClassBalance(ds.rawRows, result.targetName);
+        ds.imbalanceRatio = ds.classBalance ? computeImbalanceRatio(ds.classBalance) : null;
+      }
       saveDataset(ds);
       renderFeaturesTable(ds);
       renderClassBalance(ds);
-      
-      const sel = document.getElementById('targetCol');
-      if (sel) {
-        sel.value = result.targetName;
-        // Also update custom select visually if present
-        if (sel.nextElementSibling && sel.nextElementSibling.classList.contains('custom-select-wrapper')) {
-          const textSpan = sel.nextElementSibling.querySelector('.custom-select-text');
-          if (textSpan && sel.options[sel.selectedIndex]) {
-            textSpan.textContent = sel.options[sel.selectedIndex].text;
-          }
-          sel.nextElementSibling.querySelectorAll('.custom-option').forEach((opt, idx) => {
-            if (idx === sel.selectedIndex) opt.classList.add('selected');
-            else opt.classList.remove('selected');
-          });
-        }
-      }
+      // Force the main page targetCol select to show the new target
+      _syncTargetSelUI(ds.targetColumn);
+      renderTargetSelector(ds);
     }
     
     // Dispatch event so app.js schemaOK variable syncs
     try { window.dispatchEvent(new CustomEvent('schemaValidated', { detail: { ok: true } })); } catch(e) {}
+    
+    // Emulate app.js markSchemaSaved logic
+    try { localStorage.setItem('heathAI_schemaOK', '1'); } catch(e) {}
+    try { sessionStorage.setItem('healthai_schemaOK', '1'); } catch(e) {}
+    const sb = document.getElementById('schemaBanner');
+    if (sb) {
+      sb.className = 'banner good';
+      sb.innerHTML = '<div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div><div><b>Mapping saved.</b> Schema validated. You can now proceed to Step 3.</div>';
+    }
+
+    if (closeAfter) {
+      document.getElementById('mapperBack')?.classList.remove('open');
+    }
+    if (typeof initStep3UI === 'function') initStep3UI();
     return true;
   }
 
+  // Override ALL existing click listeners from app.js by replacing the buttons with clean clones
   if (_origSaveMapping) {
-    _origSaveMapping.addEventListener('click', function() { _doSave(); });
+    const freshBtn = _origSaveMapping.cloneNode(true);
+    _origSaveMapping.parentNode.replaceChild(freshBtn, _origSaveMapping);
+    freshBtn.addEventListener('click', function() { _doSave(false); });
   }
   if (_origSaveAndClose) {
-    _origSaveAndClose.addEventListener('click', function() { _doSave(); });
+    const freshBtn = _origSaveAndClose.cloneNode(true);
+    _origSaveAndClose.parentNode.replaceChild(freshBtn, _origSaveAndClose);
+    freshBtn.addEventListener('click', function() { _doSave(true); });
   }
 
 });
 
 // ── LOAD DEFAULT DATASET ─────────────────────────────────────────
-function generateMockRows(ds, count = 5) {
-  const rows = [];
-  const targetKeys = ds.classBalance ? Object.keys(ds.classBalance) : ['Class A', 'Class B'];
-  for (let i = 0; i < count; i++) {
-    const row = {};
-    ds.columns.forEach(col => {
-      if (col.role === 'target' || col.name === ds.targetColumn) {
-        // Remove prefixes like "1 — " if they exist
-        const key = targetKeys[Math.floor(Math.random() * targetKeys.length)];
-        row[col.name] = key.replace(/^[0-9]+\s*—\s*/, '');
-      } else if (col.type === 'binary') {
-        row[col.name] = Math.random() > 0.5 ? 1 : 0;
-      } else if (col.type === 'numeric') {
-        const val = Math.random() * (col.name.toLowerCase().includes('age') ? 80 : 150);
-        row[col.name] = col.name.toLowerCase().includes('age') ? Math.floor(val + 20) : val.toFixed(1);
-      } else if (col.type === 'category') {
-        row[col.name] = 'Cat_' + String.fromCharCode(65 + Math.floor(Math.random() * 4));
-      } else {
-        row[col.name] = 'Val_' + Math.floor(Math.random() * 100);
-      }
-    });
-    rows.push(row);
-  }
-  return rows;
-}
-
 function loadDefaultDataset(resetSchema) {
   const domainName = getCurrentDomain();
-  const baseDs = getDatasetForDomain(domainName);
-  const ds = Object.assign({}, baseDs, { rawRows: generateMockRows(baseDs, 5) });
-  saveDataset(ds);
-  renderDataset(ds);
-  if (resetSchema) {
-    saveSchemaOK(false);
+  const meta = getDatasetForDomain(domainName);
+  
+  if (!meta || !meta.localFile) {
+    console.warn("No localFile mapping for " + domainName);
+    return;
   }
-  updateSchemaBanner();
-  // Update page title/label if element exists
+  
+  // Update name immediately
   const domainLabelEl = document.getElementById('domainLabel');
   if (domainLabelEl && !domainLabelEl.textContent) {
     domainLabelEl.textContent = domainName;
   }
+
+  // Show loading state in the features table
+  const tbody = document.getElementById('featuresTableBody');
+  if (tbody) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 30px; font-style: italic; color: var(--text-muted);">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 8px;">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+      </svg><br>
+      Downloading and analyzing realistic dataset (${meta.localFile})...
+    </td></tr>`;
+  }
+  
+  // Inject a quick CSS spin animation if not present
+  if (!document.getElementById('spinStyle')) {
+    const style = document.createElement('style');
+    style.id = 'spinStyle';
+    style.innerHTML = `@keyframes spin { 100% { transform: rotate(360deg); } }`;
+    document.head.appendChild(style);
+  }
+
+  // Use Papa.parse to stream/download the CSV file
+  Papa.parse(meta.localFile, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: false, // Types handled in analyseCSV
+    complete: function(results) {
+      if (!results.data || results.data.length === 0) {
+        console.error("Empty CSV or parse error", results.errors);
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="color:var(--bad); text-align:center;">Empty or invalid CSV file.</td></tr>';
+        return;
+      }
+      
+      try {
+        const ds = analyseCSV(results);
+        
+        // Override properties with metadata from domain_datasets.js
+        ds.name = meta.name || domainName;
+        ds.source = meta.source || "Local CSV";
+        
+        // Force target column if specified in metadata
+        if (meta.defaultTarget) {
+          const tCol = ds.columns.find(c => c.name === meta.defaultTarget);
+          if (tCol) {
+            ds.targetColumn = meta.defaultTarget;
+            // Ensure roles reflect this forced target
+            ds.columns.forEach(c => {
+              if (c.name === meta.defaultTarget) c.role = 'target';
+              else if (c.role === 'target') c.role = 'feature';
+            });
+            // Recompute class balance for forced target
+            ds.classBalance = computeClassBalance(results.data, meta.defaultTarget);
+            ds.imbalanceRatio = ds.classBalance ? computeImbalanceRatio(ds.classBalance) : null;
+          }
+        }
+        
+        saveDataset(ds);
+        renderDataset(ds);
+        if (resetSchema) {
+          saveSchemaOK(false);
+        }
+        updateSchemaBanner();
+        if (typeof initStep3UI === 'function') initStep3UI();
+      } catch (e) {
+        console.error("Error analyzing CSV data:", e);
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="color:var(--bad); text-align:center;">Failed to analyze dataset. See console.</td></tr>';
+      }
+    },
+    error: function(err) {
+      console.error("Failed to load local dataset CSV:", err);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="color:var(--bad); text-align:center;">Failed to load dataset file: ' + err.message + '</td></tr>';
+    }
+  });
 }
 
 // ── FILE HANDLER ─────────────────────────────────────────────────
@@ -708,6 +888,7 @@ function handleFile(file) {
 
       renderDataset(ds);
       updateSchemaBanner();
+      if (typeof initStep3UI === 'function') initStep3UI();
 
     } catch(err) {
       showUploadError(errMsgEl, errorEl, dz, err.message || 'Could not parse the CSV file.');

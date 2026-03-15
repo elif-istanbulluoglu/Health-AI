@@ -16,6 +16,9 @@
       var ind = document.getElementById('stepIndicator');
       if (ind) { ind.innerHTML = '<span style="font-weight:700;color:var(--primary);">Step ' + n + ' / 7</span> · ' + (stepNames[n] || ''); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (n === 3 && typeof initStep3UI === 'function') {
+        initStep3UI();
+      }
       if (n === 4 && typeof _redrawActive === 'function') {
         setTimeout(function(){ requestAnimationFrame(_redrawActive); }, 80);
       }
@@ -1104,9 +1107,10 @@ ${completionNote}
           });
           ctx.globalAlpha = 1;
 
-          // Radius circle
+          // Radius circle (ensure radius is non-negative; arc() fails with negative)
+          const radius = Math.max(0, knnCurR) * Math.max(1, Math.min(W, H));
           ctx.beginPath();
-          ctx.arc(np[0] * W, np[1] * H, Math.max(0, knnCurR) * Math.min(W, H), 0, Math.PI * 2);
+          ctx.arc(np[0] * W, np[1] * H, Math.max(0.5, radius), 0, Math.PI * 2);
           ctx.strokeStyle = cPri; ctx.lineWidth = 2; ctx.globalAlpha = 0.55;
           ctx.setLineDash([6, 4]); ctx.stroke(); ctx.setLineDash([]);
           ctx.globalAlpha = 0.07; ctx.fillStyle = cPri; ctx.fill();

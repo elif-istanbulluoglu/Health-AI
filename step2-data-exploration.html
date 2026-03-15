@@ -371,16 +371,20 @@
             is tested on the testing group — patients it has never seen before.</div>
 
           <label class="lbl">Handling Missing Values</label>
-          <select class="sel">
-            <option selected>Fill with the middle value (median) — recommended</option>
-            <option>Fill with the most common value (mode)</option>
-            <option>Remove patients with missing values (loses data)</option>
-          </select>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Serum Creatinine has 6.8% missing. Filling
-            with the median preserves all 304 patients.</div>
+          <div id="missingDropdownWrap">
+            <select class="sel" id="missingSelect">
+              <option selected>Fill with the middle value (median) — recommended</option>
+              <option>Fill with the most common value (mode)</option>
+              <option>Remove patients with missing values (loses data)</option>
+            </select>
+            <div id="missingHint" style="font-size:11px;color:var(--muted);margin-top:4px;">Loading…</div>
+          </div>
+          <div id="missingNoValuesMsg" style="display:none;">
+            <div class="banner good" style="margin-top:0;"><div class="banner-icon">✓</div><div>No missing values — strategy will not alter the data.</div></div>
+          </div>
 
           <label class="lbl">Normalisation (Putting All Values on the Same Scale)</label>
-          <select class="sel">
+          <select class="sel" id="normSelect">
             <option selected>Z-score (recommended for most models)</option>
             <option>Min-Max (0 to 1 scale)</option>
             <option>None</option>
@@ -388,14 +392,18 @@
           <div style="font-size:11px;color:var(--muted);margin-top:4px;">Age (0–100) and Serum Sodium (130–150 mmol/L)
             are on different scales. Without normalisation, some models get confused by the size difference.</div>
 
-          <label class="lbl">Handling Class Imbalance (More Non-Readmitted Than Readmitted)</label>
-          <select class="sel">
-            <option selected>SMOTE — Create synthetic similar cases for the minority group</option>
-            <option>Class weights — Give higher importance to readmitted patients</option>
-            <option>None</option>
-          </select>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Because only 33% were readmitted, SMOTE
-            creates extra examples of readmitted patients so the model learns both groups equally well.</div>
+          <label class="lbl">Handling Class Imbalance</label>
+          <div id="smoteDropdownWrap">
+            <select class="sel" id="smoteSelect">
+              <option selected>SMOTE — Create synthetic similar cases for the minority group</option>
+              <option>Class weights — Give higher importance to the minority class</option>
+              <option>None</option>
+            </select>
+            <div id="smoteHint" style="font-size:11px;color:var(--muted);margin-top:4px;">Because only 33% belong to the minority class, SMOTE creates extra examples so the model learns both groups equally well.</div>
+          </div>
+          <div id="smoteBalancedMsg" style="display:none;">
+            <div class="banner good" style="margin-top:0;"><div class="banner-icon">✓</div><div>SMOTE cannot be applied — dataset is already balanced (50/50).</div></div>
+          </div>
 
           <div class="btn-row">
             <button class="btn teal" style="width:100%;">✓ Apply Preparation Settings</button>
@@ -506,7 +514,7 @@
               </div>
             </div>
           </div>
-          <div class="banner good" style="margin-top:10px;">
+          <div id="step3ReadyBanner" class="banner good" style="margin-top:10px;display:none;">
             <div class="banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--good);">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -1597,5 +1605,6 @@
   <script src="app.js"></script>
   <script src="domain_datasets.js"></script>
   <script src="step2_backend.js"></script>
+  <script src="step3_backend.js"></script>
 </body>
 </html>
