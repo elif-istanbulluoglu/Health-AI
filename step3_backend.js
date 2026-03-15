@@ -41,6 +41,9 @@ function initStep3UI() {
 
     // Dynamic warning texts: Target class balance and missing pct hints
     updateHintsWarning(ds);
+
+    // Before user clicks "Apply Settings", show placeholder text instead of charts
+    resetTransformStatsPlaceholder();
 }
 
 function updateHintsWarning(ds) {
@@ -194,6 +197,39 @@ function loadPreprocessedData() {
         const d = sessionStorage.getItem('healthai_preprocessed');
         return d ? JSON.parse(d) : null;
     } catch(e) { return null; }
+}
+
+function resetTransformStatsPlaceholder() {
+    const grid2s = document.querySelectorAll('#step-3 .grid2');
+    if (!grid2s || grid2s.length === 0) return;
+
+    const placeholderHTML = `
+        <div style="
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            height: 120px;
+            border: 1.5px dashed var(--color-border-tertiary, #e0e0e0);
+            border-radius: 10px;
+            background: var(--color-background-secondary, #f9f9f9);
+        ">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="20" width="6" height="9" rx="2" fill="var(--color-border-secondary, #ccc)"/>
+                <rect x="13" y="13" width="6" height="16" rx="2" fill="var(--color-border-secondary, #ccc)"/>
+                <rect x="23" y="7" width="6" height="22" rx="2" fill="var(--color-border-secondary, #ccc)"/>
+            </svg>
+            <span style="font-size: 13px; color: var(--color-text-tertiary, #aaa); letter-spacing: 0.01em;">
+                It will appear here once you apply the settings.
+            </span>
+        </div>
+    `;
+
+    grid2s.forEach(viz => {
+        viz.innerHTML = placeholderHTML;
+    });
 }
 
 function renderTransformStats(before, after, columns, opts) {
