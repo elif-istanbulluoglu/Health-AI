@@ -242,9 +242,14 @@ function renderTransformStats(before, after, columns, opts) {
     const normViz = grid2s[0];
     const numCols = columns.filter(c => c.role === 'numeric');
     if (numCols.length > 0) {
-        const exampleCol = numCols[0].name;
-        const b = before.features[exampleCol];
-        const a = after.features[exampleCol];
+        // Prefer aggregate stats across ALL numeric features (backend-provided).
+        // Fallback to first numeric column for backward compatibility.
+        const b = before && before.numeric_aggregate
+          ? before.numeric_aggregate
+          : (before && before.features ? before.features[numCols[0].name] : null);
+        const a = after && after.numeric_aggregate
+          ? after.numeric_aggregate
+          : (after && after.features ? after.features[numCols[0].name] : null);
         
         const title = normViz.previousElementSibling;
         if (title && title.classList.contains('card-title')) {

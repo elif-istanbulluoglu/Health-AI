@@ -582,6 +582,18 @@ function validateMapper() {
     ? mapperTargetEl.value
     : ds.targetColumn;
 
+  // Extra rule: if the selected target column is explicitly marked as "not recommended"
+  // in the mapperTargetCol dropdown text, block validation and show a clear message.
+  if (mapperTargetEl && mapperTargetEl.options && mapperTargetEl.selectedIndex >= 0) {
+    const optText = mapperTargetEl.options[mapperTargetEl.selectedIndex].text || '';
+    if (optText.toLowerCase().includes('not recommended')) {
+      return {
+        ok: false,
+        msg: `Selected target column "${effectiveTarget}" is marked as "not recommended". Please choose a different target column.`
+      };
+    }
+  }
+
   // Assign defaults for columns without explicit roles
   const activeRoles = {};
   ds.columns.forEach(col => {

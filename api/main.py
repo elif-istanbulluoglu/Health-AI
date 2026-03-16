@@ -45,6 +45,28 @@ def get_stats(df, col_name, col_type):
         }
     return None
 
+def get_aggregate_numeric_stats(df: pd.DataFrame, numeric_cols: List[str]):
+    """
+    Compute global min/max/mean across ALL numeric feature values (all rows, all numeric columns).
+    This matches the UI requirement: use dataset-wide extrema and overall average, not a single example column.
+    """
+    if df is None or df.empty or not numeric_cols:
+        return None
+    cols = [c for c in numeric_cols if c in df.columns]
+    if not cols:
+        return None
+    # Coerce to numeric and flatten across columns.
+    m = df[cols].apply(pd.to_numeric, errors='coerce')
+    vals = m.to_numpy().astype(np.float64).ravel()
+    vals = vals[~np.isnan(vals)]
+    if vals.size == 0:
+        return None
+    return {
+        "min": float(np.min(vals)),
+        "max": float(np.max(vals)),
+        "mean": float(np.mean(vals)),
+    }
+
 def get_class_balance(df, target_col):
     if target_col not in df.columns:
         return {}
@@ -81,6 +103,8 @@ async def prepare_data(req: PrepareRequest):
         }
         for col in num_cols:
             before_stats["features"][col] = get_stats(df, col, 'numeric')
+        # Aggregate numeric stats across all numeric feature values (global)
+        before_stats["numeric_aggregate"] = get_aggregate_numeric_stats(df, num_cols)
 
         keep_cols = feature_cols + [req.targetColumn]
         df = df[keep_cols]
@@ -183,6 +207,8 @@ async def prepare_data(req: PrepareRequest):
         }
         for col in num_cols:
             after_stats["features"][col] = get_stats(X_train, col, 'numeric')
+        # Aggregate numeric stats across all numeric feature values (global, after imputation/normalisation)
+        after_stats["numeric_aggregate"] = get_aggregate_numeric_stats(X_train, num_cols)
 
         # --- SMOTE ---
         applied_smote = False
