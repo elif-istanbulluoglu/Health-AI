@@ -344,6 +344,11 @@ function renderTargetSelector(ds) {
     saveDataset(ds);
     renderFeaturesTable(ds);
     renderClassBalance(ds); // Class balance depends on target
+
+    // Target değiştiğinde, kullanıcıyı Column Mapper'ı tekrar açıp kaydetmeye zorla
+    // Böylece Step 3'e geçmeden önce şema yeniden doğrulanmış olur.
+    saveSchemaOK(false);
+    updateSchemaBanner();
   });
   saveTargetCol(ds.targetColumn);
 
@@ -685,6 +690,18 @@ document.addEventListener('DOMContentLoaded', function () {
   const _origSaveAndClose = document.getElementById('saveAndClose');
 
   function _doSave(closeAfter) {
+    // Require an explicit click on "Validate Schema" after opening the mapper.
+    // (Even though we can validate programmatically, UX requirement is to force the user to press it.)
+    if (!window.__healthai_mapperValidateClicked) {
+      const mb = document.getElementById('mapBanner');
+      if (mb) {
+        mb.className = 'banner warn';
+        mb.innerHTML = '<div class="banner-icon">⚠️</div><div><b>Action required:</b> You should validate the schema before saving.</div>';
+      } else {
+        alert('You should validate the schema before saving.');
+      }
+      return false;
+    }
     const result = validateMapper();
     if (!result.ok) {
       document.getElementById('validateSchema')?.click(); // trigger error UI

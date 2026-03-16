@@ -191,7 +191,11 @@
 
     // ── COLUMN MAPPER MODAL ───────────────────────────────────────────
     const mapBack = document.getElementById('mapperBack');
+    // Track whether user clicked "Validate Schema" after opening the mapper.
+    // Save/Save&Close will require this click (step2_backend enforces).
+    window.__healthai_mapperValidateClicked = window.__healthai_mapperValidateClicked || false;
     document.getElementById('openMapper').addEventListener('click', () => {
+      window.__healthai_mapperValidateClicked = false;
       if (typeof populateMapper === 'function') {
         var ds = typeof loadDataset === 'function' ? loadDataset() : null;
         if (ds) populateMapper(ds);
@@ -204,6 +208,7 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') mapBack.classList.remove('open'); });
 
     document.getElementById('validateSchema').addEventListener('click', () => {
+      window.__healthai_mapperValidateClicked = true;
       if (typeof validateMapper === 'function') {
         // Handled by step2-data.js
         var result = validateMapper();
